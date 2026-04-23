@@ -71,6 +71,15 @@
 
     canvas { display: block; }
 
+    .wheel-logo {
+      position: absolute;
+      width: 36px;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 4;
+    }
+
     /* ── TITLE ── */
     .title {
       text-align: center;
@@ -103,7 +112,7 @@
       background: #fff;
     }
 
-    .field input:focus { border-color: #C8A033; }
+    .field input:focus { border-color: #00a341; }
     .field input::placeholder { color: #AAA; }
 
     .phone-row {
@@ -133,7 +142,7 @@
       background-color: #FAFAF9;
       transition: border-color 0.2s;
     }
-    .phone-prefix:focus { border-color: #C8A033; }
+    .phone-prefix:focus { border-color: #00a341; }
 
     .phone-row input[type="tel"] {
       flex: 1;
@@ -147,7 +156,7 @@
       background: #fff;
     }
 
-    .phone-row input[type="tel"]:focus { border-color: #C8A033; }
+    .phone-row input[type="tel"]:focus { border-color: #00a341; }
     .phone-row input[type="tel"]::placeholder { color: #AAA; }
 
     .privacy {
@@ -158,7 +167,7 @@
     .privacy input[type="checkbox"] {
       width: 17px; height: 17px;
       flex-shrink: 0; margin-top: 1px;
-      accent-color: #C8A033; cursor: pointer;
+      accent-color: #00a341; cursor: pointer;
     }
 
     .privacy-text {
@@ -172,7 +181,7 @@
 
     .spin-btn {
       width: 100%; padding: 15px;
-      background: #1A1A1A; color: #fff;
+      background: #00a341; color: #fff;
       border: none; border-radius: 3px;
       font-family: 'Montserrat', sans-serif;
       font-size: 13px; font-weight: 700;
@@ -181,7 +190,7 @@
       transition: background 0.25s;
     }
 
-    .spin-btn:hover:not(:disabled) { background: #C8A033; }
+    .spin-btn:hover:not(:disabled) { background: #007d32; }
     .spin-btn:disabled { opacity: 0.55; cursor: not-allowed; }
 
     /* ── SUCCESS OVERLAY ── */
@@ -247,8 +256,8 @@
       border: 1.5px solid #E0D8CE; border-radius: 3px;
       padding: 13px;
       font-size: 17px; font-weight: 700;
-      color: #C8A033; letter-spacing: 2.5px;
-      margin-bottom: 12px; background: #FBF8F2;
+      color: #00a341; letter-spacing: 2.5px;
+      margin-bottom: 12px; background: #F0FFF6;
     }
 
     .copy-btn {
@@ -261,8 +270,8 @@
       text-transform: uppercase;
       transition: background 0.25s;
     }
-    .copy-btn:hover  { background: #C8A033; }
-    .copy-btn.copied { background: #C8A033; }
+    .copy-btn:hover  { background: #007d32; }
+    .copy-btn.copied { background: #007d32; }
 
     /* error hint */
     .hint {
@@ -283,13 +292,15 @@
       <!-- Ponteiro -->
       <div class="pointer">
         <svg width="26" height="32" viewBox="0 0 26 32" fill="none">
-          <path d="M13 0C5.82 0 0 5.82 0 13C0 22.75 13 32 13 32C13 32 26 22.75 26 13C26 5.82 20.18 0 13 0Z" fill="#1A1A1A"/>
+          <path d="M13 0C5.82 0 0 5.82 0 13C0 22.75 13 32 13 32C13 32 26 22.75 26 13C26 5.82 20.18 0 13 0Z" fill="#CC0000"/>
           <circle cx="13" cy="13" r="5" fill="white"/>
         </svg>
       </div>
       <div class="wheel-canvas-wrap">
         <canvas id="wheelCanvas" width="244" height="244"></canvas>
       </div>
+      <!-- Logo centralizado sobre a roleta -->
+      <img src="logo.svg" class="wheel-logo" alt="Nouê" />
     </div>
   </div>
 
@@ -413,10 +424,10 @@ const R  = CW / 2 - 2;
 
 // Segment 0 (index 0) é o vencedor: sempre cai em 15%
 const SEGMENTS = [
-  { label: '15%',             color: '#C8A033', text: '#FFFFFF' },
-  { label: '5%',              color: '#1A1A1A', text: '#C8A033' },
-  { label: 'BRINDE',          color: '#D4AA3E', text: '#FFFFFF' },
-  { label: 'TENTE\nNOVAMENTE', color: '#2C2C2C', text: '#D4AA3E' },
+  { label: '15%',             color: '#00a341', text: '#FFFFFF' },
+  { label: '5%',              color: '#1A1A1A', text: '#FFFFFF' },
+  { label: 'BRINDE',          color: '#00a341', text: '#FFFFFF' },
+  { label: 'TENTE\nNOVAMENTE', color: '#2C2C2C', text: '#FFFFFF' },
 ];
 
 const NUM = SEGMENTS.length;
@@ -482,8 +493,6 @@ function drawWheel(rot) {
   ctx.lineWidth = 2;
   ctx.stroke();
 
-  // Logo N da Nouê
-  drawN(CX, CY, 26);
 }
 
 function drawN(cx, cy, size) {
@@ -628,7 +637,7 @@ function copyCoupon() {
 function createSparkles() {
   const wrap  = document.getElementById('sparkles');
   wrap.innerHTML = '';
-  const colors = ['#C8A033','#F0C040','#E8B820','#D4A030','#FBD96A'];
+  const colors = ['#00a341','#00c44f','#007d32','#33b560','#80d9a0'];
   for (let i = 0; i < 16; i++) {
     const d = document.createElement('div');
     d.className = 'sparkle';
