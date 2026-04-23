@@ -561,6 +561,44 @@ function animateSpin(targetDeg, onDone) {
   requestAnimationFrame(step);
 }
 
+// ── KLAVIYO ──────────────────────────────────────────────────────
+const KLAVIYO_COMPANY_ID = 'WgydHV';
+const KLAVIYO_LIST_ID    = 'USNPFr';
+
+async function sendToKlaviyo(email, phone) {
+  const countryCode = document.getElementById('countryCode').value;
+  const digits = phone.replace(/\D/g, '');
+  const e164   = countryCode + digits;
+
+  // 1. Cria/atualiza perfil com e-mail, telefone e propriedades
+  fetch(`https://a.klaviyo.com/client/profiles/?company_id=${KLAVIYO_COMPANY_ID}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'revision': '2024-02-15' },
+    body: JSON.stringify({
+      data: {
+        type: 'profile',
+        attributes: {
+          email,
+          phone_number: e164,
+          properties: { source: 'Roleta Nouê', cupom: COUPON }
+        }
+      }
+    })
+  }).catch(e => console.warn('Klaviyo profile error:', e));
+
+  // 2. Inscreve o e-mail na lista
+  fetch(`https://a.klaviyo.com/client/subscriptions/?company_id=${KLAVIYO_COMPANY_ID}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'revision': '2024-02-15' },
+    body: JSON.stringify({
+      data: {
+        type: 'subscription',
+        attributes: { list_id: KLAVIYO_LIST_ID, email }
+      }
+    })
+  }).catch(e => console.warn('Klaviyo subscription error:', e));
+}
+
 // ── FORMULÁRIO ───────────────────────────────────────────────────
 document.getElementById('phone').addEventListener('input', function () {
   let v = this.value.replace(/\D/g, '').slice(0, 11);
@@ -597,6 +635,9 @@ document.getElementById('leadForm').addEventListener('submit', async function (e
   // Salva lead no Supabase (sem bloquear a animação)
   sb.from('roleta_leads').insert({ email, phone, coupon: COUPON })
     .then(({ error }) => { if (error) console.warn('Supabase insert error:', error.message); });
+
+  // Envia para Klaviyo
+  sendToKlaviyo(email, phone);
 
   animateSpin(calcTargetDeg(), () => {
     spinning = false;
