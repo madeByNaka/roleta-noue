@@ -61,7 +61,24 @@
       top: -8px; left: 50%;
       transform: translateX(-50%);
       z-index: 5;
+      animation: none;
+      transform-origin: center bottom;
     }
+
+    @keyframes pointerIdle {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50%       { transform: translateX(-50%) translateY(-4px); }
+    }
+
+    @keyframes pointerTick {
+      0%   { transform: translateX(-50%) rotate(0deg);   }
+      25%  { transform: translateX(-50%) rotate(28deg);  }
+      55%  { transform: translateX(-50%) rotate(-12deg); }
+      80%  { transform: translateX(-50%) rotate(5deg);   }
+      100% { transform: translateX(-50%) rotate(0deg);   }
+    }
+
+    .pointer.ticking { animation: pointerTick 0.2s ease-out forwards !important; }
 
     .wheel-canvas-wrap {
       width: 244px; height: 244px;
@@ -73,7 +90,7 @@
 
     .wheel-logo {
       position: absolute;
-      width: 36px;
+      width: 28px;
       top: 50%; left: 50%;
       transform: translate(-50%, -50%);
       pointer-events: none;
@@ -418,7 +435,14 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 // ── WHEEL ────────────────────────────────────────────────────────
 const canvas  = document.getElementById('wheelCanvas');
 const ctx     = canvas.getContext('2d');
-const CW = canvas.width, CH = canvas.height;
+const dpr     = window.devicePixelRatio || 1;
+const SIZE    = 244;
+canvas.width  = SIZE * dpr;
+canvas.height = SIZE * dpr;
+canvas.style.width  = SIZE + 'px';
+canvas.style.height = SIZE + 'px';
+ctx.scale(dpr, dpr);
+const CW = SIZE, CH = SIZE;
 const CX = CW / 2, CY = CH / 2;
 const R  = CW / 2 - 2;
 
@@ -473,12 +497,12 @@ function drawWheel(rot) {
     const dist  = R * 0.60;
 
     if (lines.length === 1) {
-      ctx.font = '700 13px Montserrat, sans-serif';
+      ctx.font = '700 17px Montserrat, sans-serif';
       ctx.fillText(lines[0], dist, 0);
     } else {
-      ctx.font = '700 9px Montserrat, sans-serif';
+      ctx.font = '700 10px Montserrat, sans-serif';
       lines.forEach((line, idx) => {
-        ctx.fillText(line, dist, (idx - (lines.length - 1) / 2) * 12);
+        ctx.fillText(line, dist, (idx - (lines.length - 1) / 2) * 14);
       });
     }
     ctx.restore();
@@ -486,7 +510,7 @@ function drawWheel(rot) {
 
   // Círculo central branco
   ctx.beginPath();
-  ctx.arc(CX, CY, 36, 0, Math.PI * 2);
+  ctx.arc(CX, CY, 28, 0, Math.PI * 2);
   ctx.fillStyle = '#FFFFFF';
   ctx.fill();
   ctx.strokeStyle = '#F0EAE0';
@@ -540,17 +564,34 @@ function easeOut(t) {
   return 1 - Math.pow(1 - t, 4);
 }
 
+function triggerPointerTick() {
+  const ptr = document.querySelector('.pointer');
+  ptr.classList.remove('ticking');
+  void ptr.offsetWidth; // força reflow para reiniciar animação
+  ptr.classList.add('ticking');
+  ptr.addEventListener('animationend', () => ptr.classList.remove('ticking'), { once: true });
+}
+
 function animateSpin(targetDeg, onDone) {
   const targetRad  = targetDeg * Math.PI / 180;
   const startAngle = rotation;
   const endAngle   = startAngle + targetRad;
   const duration   = 5200;
   const startTime  = performance.now();
+  let lastTick     = Math.floor(startAngle / ARC);
 
   function step(now) {
     const t = Math.min((now - startTime) / duration, 1);
     rotation = startAngle + easeOut(t) * (endAngle - startAngle);
     drawWheel(rotation);
+
+    // Detecta cada vez que a roleta passa por uma divisória
+    const currentTick = Math.floor(rotation / ARC);
+    if (currentTick !== lastTick) {
+      lastTick = currentTick;
+      triggerPointerTick();
+    }
+
     if (t < 1) {
       requestAnimationFrame(step);
     } else {
@@ -675,23 +716,56 @@ function copyCoupon() {
 }
 
 function createSparkles() {
-  const wrap  = document.getElementById('sparkles');
+  const wrap = document.getElementById('sparkles');
   wrap.innerHTML = '';
-  const colors = ['#00a341','#00c44f','#007d32','#33b560','#80d9a0'];
-  for (let i = 0; i < 16; i++) {
-    const d = document.createElement('div');
-    d.className = 'sparkle';
-    const sz = 4 + Math.random() * 6;
-    d.style.cssText = `
-      width:${sz}px; height:${sz}px;
-      background:${colors[i % colors.length]};
-      left:${5 + Math.random() * 90}%;
-      top:${5 + Math.random() * 90}%;
-      animation-delay:${(Math.random() * 0.8).toFixed(2)}s;
-      animation-duration:${(0.7 + Math.random() * 0.8).toFixed(2)}s;
-    `;
-    wrap.appendChild(d);
+
+  const colors = ['#00a341','#FFD700','#FF6B6B','#4FC3F7','#CE93D8','#FFCC02','#FF8A65'];
+  const pieces = [];
+  const total  = 80;
+
+  const cv = document.createElement('canvas');
+  cv.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;border-radius:16px;';
+  wrap.appendChild(cv);
+
+  function resize() { cv.width = cv.offsetWidth; cv.height = cv.offsetHeight; }
+  resize();
+
+  for (let i = 0; i < total; i++) {
+    pieces.push({
+      x: Math.random() * cv.width,
+      y: -10 - Math.random() * 80,
+      w: 6 + Math.random() * 6,
+      h: 10 + Math.random() * 8,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      rot: Math.random() * Math.PI * 2,
+      vx: (Math.random() - 0.5) * 2.5,
+      vy: 2 + Math.random() * 3,
+      vr: (Math.random() - 0.5) * 0.2,
+    });
   }
+
+  let frame;
+  function draw() {
+    const c = cv.getContext('2d');
+    c.clearRect(0, 0, cv.width, cv.height);
+    let alive = false;
+    for (const p of pieces) {
+      p.x  += p.vx;
+      p.y  += p.vy;
+      p.rot += p.vr;
+      p.vy += 0.07;
+      if (p.y < cv.height + 20) alive = true;
+      c.save();
+      c.translate(p.x, p.y);
+      c.rotate(p.rot);
+      c.fillStyle = p.color;
+      c.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      c.restore();
+    }
+    if (alive) frame = requestAnimationFrame(draw);
+  }
+  draw();
+  setTimeout(() => cancelAnimationFrame(frame), 4000);
 }
 </script>
 </body>
