@@ -574,9 +574,20 @@ async function sendToKlaviyo(email, phone) {
         data: {
           type: 'subscription',
           attributes: {
-            list_id: KLAVIYO_LIST_ID,
-            email,
-            custom_source: 'Roleta Nouê'
+            profile: {
+              data: {
+                type: 'profile',
+                attributes: { email }
+              }
+            },
+            channels: {
+              email: { consented: true }
+            }
+          },
+          relationships: {
+            list: {
+              data: { type: 'list', id: KLAVIYO_LIST_ID }
+            }
           }
         }
       })
