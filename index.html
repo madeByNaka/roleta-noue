@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gire e Ganhe – Nouê Cosméticos</title>
+  <title>Gire e Ganhe – Dry Skin</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -129,7 +129,7 @@
       background: #fff;
     }
 
-    .field input:focus { border-color: #00a341; }
+    .field input:focus { border-color: #1a7a4c; }
     .field input::placeholder { color: #AAA; }
 
     .phone-row {
@@ -159,7 +159,7 @@
       background-color: #FAFAF9;
       transition: border-color 0.2s;
     }
-    .phone-prefix:focus { border-color: #00a341; }
+    .phone-prefix:focus { border-color: #1a7a4c; }
 
     .phone-row input[type="tel"] {
       flex: 1;
@@ -173,7 +173,7 @@
       background: #fff;
     }
 
-    .phone-row input[type="tel"]:focus { border-color: #00a341; }
+    .phone-row input[type="tel"]:focus { border-color: #1a7a4c; }
     .phone-row input[type="tel"]::placeholder { color: #AAA; }
 
     .privacy {
@@ -184,7 +184,7 @@
     .privacy input[type="checkbox"] {
       width: 17px; height: 17px;
       flex-shrink: 0; margin-top: 1px;
-      accent-color: #00a341; cursor: pointer;
+      accent-color: #1a7a4c; cursor: pointer;
     }
 
     .privacy-text {
@@ -198,7 +198,7 @@
 
     .spin-btn {
       width: 100%; padding: 15px;
-      background: #00a341; color: #fff;
+      background: #1a7a4c; color: #fff;
       border: none; border-radius: 8px;
       font-family: 'Montserrat', sans-serif;
       font-size: 13px; font-weight: 700;
@@ -273,7 +273,7 @@
       border: 1.5px solid #E0D8CE; border-radius: 8px;
       padding: 13px;
       font-size: 17px; font-weight: 700;
-      color: #00a341; letter-spacing: 2.5px;
+      color: #1a7a4c; letter-spacing: 2.5px;
       margin-bottom: 12px; background: #F0FFF6;
     }
 
@@ -396,7 +396,7 @@
       <input type="checkbox" id="privacy" />
       <span class="privacy-text">
         Ao marcar esta caixa, você concorda com a nossa
-        <a href="https://nouecosmeticos.com.br/policies/privacy-policy" target="_blank">Política de Privacidade</a> *
+        <a href="https://www.dryskin.com.br/policies/terms-of-service?_gl=1*sxy2vz*_gcl_au*ODkzMjM3MjEyLjE3NzcwMzcyMzY." target="_blank">Política de Privacidade</a> *
       </span>
     </div>
     <span class="hint" id="privacyHint" style="margin-bottom:12px;">Aceite a Política de Privacidade para continuar.</span>
@@ -414,9 +414,9 @@
     <h2 class="success-title">VOCÊ GANHOU!</h2>
     <p class="success-desc">
       Aqui está seu cupom de desconto para usar em sua compra.<br>
-      Este cupom é válido por 24 horas.
+      Este cupom é válido por 24 horas para compras a partir de R$99.
     </p>
-    <div class="coupon" id="couponDisplay">BEMVINDANOUE</div>
+    <div class="coupon" id="couponDisplay">DRYSKIN10</div>
     <button class="copy-btn" id="copyBtn" onclick="copyCoupon()">COPIAR</button>
   </div>
 </div>
@@ -426,9 +426,9 @@
 
 <script>
 // ── CONFIG ──────────────────────────────────────────────────────
-const SUPABASE_URL  = 'https://zhdapckcsibmofworhjj.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpoZGFwY2tjc2libW9md29yaGpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2Mjg5ODYsImV4cCI6MjA4ODIwNDk4Nn0.tS9s-gazJVxGd6WPHk7nryPx9UAO0N-A-w60d3ICIvc';
-const COUPON        = 'BEMVINDANOUE';
+const SUPABASE_URL  = 'https://mopiwrurdamgxmfjlrpa.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vcGl3cnVyZGFtZ3htZmpscnBhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMTkxODcsImV4cCI6MjA4ODg5NTE4N30.1rnNg-vFYfLHGNQTaZ-KcTTC_UsM_FxWrenahXGXr5c';
+const COUPON        = 'DRYSKIN10';
 
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
@@ -448,9 +448,9 @@ const R  = CW / 2 - 2;
 
 // Segment 0 (index 0) é o vencedor: sempre cai em 15%
 const SEGMENTS = [
-  { label: '15%',             color: '#00a341', text: '#FFFFFF' },
+  { label: '10%',             color: '#1a7a4c', text: '#FFFFFF' },
   { label: '5%',              color: '#1A1A1A', text: '#FFFFFF' },
-  { label: 'BRINDE',          color: '#00a341', text: '#FFFFFF' },
+  { label: 'BRINDE',          color: '#1a7a4c', text: '#FFFFFF' },
   { label: 'TENTE\nNOVAMENTE', color: '#2C2C2C', text: '#FFFFFF' },
 ];
 
@@ -603,12 +603,12 @@ function animateSpin(targetDeg, onDone) {
 }
 
 // ── KLAVIYO ──────────────────────────────────────────────────────
-const KLAVIYO_COMPANY_ID = 'WgydHV';
-const KLAVIYO_LIST_ID    = 'USNPFr';
+const KLAVIYO_COMPANY_ID = '';
+const KLAVIYO_LIST_ID    = '';
 
 async function sendToKlaviyo(email, phone) {
   try {
-    const res = await fetch(`https://a.klaviyo.com/client/subscriptions/?company_id=${KLAVIYO_COMPANY_ID}`, {
+    const res = await fetch(``, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'revision': '2024-02-15' },
       body: JSON.stringify({
@@ -719,7 +719,7 @@ function createSparkles() {
   const wrap = document.getElementById('sparkles');
   wrap.innerHTML = '';
 
-  const colors = ['#00a341','#FFD700','#FF6B6B','#4FC3F7','#CE93D8','#FFCC02','#FF8A65'];
+  const colors = ['#1a7a4c','#FFD700','#FF6B6B','#4FC3F7','#CE93D8','#FFCC02','#FF8A65'];
   const pieces = [];
   const total  = 80;
 
