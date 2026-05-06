@@ -184,7 +184,7 @@
     .privacy input[type="checkbox"] {
       width: 17px; height: 17px;
       flex-shrink: 0; margin-top: 1px;
-      accent-color: #00a341; cursor: pointer;
+      accent-color: #a13d88; cursor: pointer;
     }
 
     .privacy-text {
@@ -198,7 +198,7 @@
 
     .spin-btn {
       width: 100%; padding: 15px;
-      background: #00a341; color: #fff;
+      background: #dc689a; color: #fff;
       border: none; border-radius: 8px;
       font-family: 'Montserrat', sans-serif;
       font-size: 13px; font-weight: 700;
@@ -207,7 +207,7 @@
       transition: background 0.25s;
     }
 
-    .spin-btn:hover:not(:disabled) { background: #007d32; }
+    .spin-btn:hover:not(:disabled) { background: #a03d88; }
     .spin-btn:disabled { opacity: 0.55; cursor: not-allowed; }
 
     /* ── SUCCESS OVERLAY ── */
@@ -270,11 +270,11 @@
     }
 
     .coupon {
-      border: 1.5px solid #E0D8CE; border-radius: 8px;
+      border: 1.5px solid #dccee0; border-radius: 8px;
       padding: 13px;
       font-size: 17px; font-weight: 700;
-      color: #00a341; letter-spacing: 2.5px;
-      margin-bottom: 12px; background: #F0FFF6;
+      color: #c64b90; letter-spacing: 2.5px;
+      margin-bottom: 12px; background: #fff0fb;
     }
 
     .copy-btn {
@@ -416,7 +416,7 @@
       Aqui está seu cupom de desconto para usar em sua compra.<br>
       Este cupom é válido por 24 horas.
     </p>
-    <div class="coupon" id="couponDisplay">BEMVINDANOUE</div>
+    <div class="coupon" id="couponDisplay">MAE10</div>
     <button class="copy-btn" id="copyBtn" onclick="copyCoupon()">COPIAR</button>
   </div>
 </div>
@@ -428,7 +428,7 @@
 // ── CONFIG ──────────────────────────────────────────────────────
 const SUPABASE_URL  = 'https://zhdapckcsibmofworhjj.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpoZGFwY2tjc2libW9md29yaGpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2Mjg5ODYsImV4cCI6MjA4ODIwNDk4Nn0.tS9s-gazJVxGd6WPHk7nryPx9UAO0N-A-w60d3ICIvc';
-const COUPON        = 'BEMVINDANOUE';
+const COUPON        = 'MAE10';
 
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
@@ -448,10 +448,10 @@ const R  = CW / 2 - 2;
 
 // Segment 0 (index 0) é o vencedor: sempre cai em 15%
 const SEGMENTS = [
-  { label: '15%',             color: '#00a341', text: '#FFFFFF' },
-  { label: '5%',              color: '#1A1A1A', text: '#FFFFFF' },
-  { label: 'BRINDE',          color: '#00a341', text: '#FFFFFF' },
-  { label: 'TENTE\nNOVAMENTE', color: '#2C2C2C', text: '#FFFFFF' },
+  { label: 'CUPOM MÊS\n DAS MÃES', color: '#c64b90', text: '#FFFFFF' },
+  { label: '5%',                     color: '#1A1A1A', text: '#FFFFFF' },
+  { label: 'BRINDE',                 color: '#c64b90', text: '#FFFFFF' },
+  { label: 'TENTE\nNOVAMENTE',       color: '#2C2C2C', text: '#FFFFFF' },
 ];
 
 const NUM = SEGMENTS.length;
