@@ -602,6 +602,28 @@ function animateSpin(targetDeg, onDone) {
   requestAnimationFrame(step);
 }
 
+// ── VALIDAÇÃO DE DOMÍNIO ─────────────────────────────────────────
+const domainCache = new Map();
+
+async function checkEmailDomain(email) {
+  const domain = email.split('@')[1].toLowerCase();
+
+  if (domainCache.has(domain)) return domainCache.get(domain);
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/bright-responder`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON },
+      body: JSON.stringify({ email })
+    });
+    const { valid } = await res.json();
+    domainCache.set(domain, valid);
+    return valid;
+  } catch {
+    return true; // libera em caso de erro para não bloquear usuários legítimos
+  }
+}
+
 // ── KLAVIYO ──────────────────────────────────────────────────────
 const KLAVIYO_COMPANY_ID = 'WgydHV';
 const KLAVIYO_LIST_ID    = 'USNPFr';
@@ -823,9 +845,20 @@ document.getElementById('leadForm').addEventListener('submit', async function (e
 
   if (!ok || spinning) return;
 
-  spinning = true;
+  // Valida domínio do e-mail via Edge Function (MX record)
   const btn = document.getElementById('spinBtn');
   btn.disabled = true;
+  btn.textContent = 'VALIDANDO...';
+
+  const emailOk = await checkEmailDomain(email);
+  if (!emailOk) {
+    show('emailHint', true);
+    btn.disabled = false;
+    btn.textContent = 'GIRAR ROLETA';
+    return;
+  }
+
+  spinning = true;
   btn.textContent = 'GIRANDO...';
 
   // Salva lead no Supabase (sem bloquear a animação)
