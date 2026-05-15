@@ -613,9 +613,14 @@ async function checkEmailDomain(email) {
   try {
     const res = await fetch(`${SUPABASE_URL}/functions/v1/bright-responder`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON },
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON,
+        'Authorization': `Bearer ${SUPABASE_ANON}`
+      },
       body: JSON.stringify({ email })
     });
+    if (!res.ok) return true; // se a função falhar, libera
     const { valid } = await res.json();
     domainCache.set(domain, valid);
     return valid;
