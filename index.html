@@ -157,7 +157,31 @@
     .quiz-thanks { text-align: center; }
     .quiz-thanks h3 { font-size: 18px; color: #ad1e41; margin: 6px 0; }
     .quiz-thanks p { font-size: 13px; color: #555; line-height: 1.5; }
-    .quiz-thanks .coupon-mini { font-weight: 800; color: #1A1A1A; letter-spacing: 1px; }
+    .quiz-thanks__label {
+      font-size: 11px; color: #999; margin: 12px 0 8px;
+      text-transform: uppercase; letter-spacing: 1px; font-weight: 600;
+    }
+    .quiz-coupon {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: #ad1e41; color: #fff; border: none;
+      border-radius: 10px; padding: 13px 16px;
+      font-family: 'Montserrat', sans-serif; font-weight: 800;
+      font-size: 18px; letter-spacing: 1.5px; cursor: pointer;
+      box-shadow: 0 6px 16px rgba(173,30,65,0.30);
+      animation: couponPulse 1.6s ease-in-out infinite;
+      transition: transform 0.1s ease;
+    }
+    .quiz-coupon:hover { transform: translateY(-1px); }
+    .quiz-coupon:active { transform: scale(0.97); }
+    .quiz-coupon.is-copied { background: #8f1836; }
+    .quiz-coupon__copy {
+      background: rgba(255,255,255,0.22); border-radius: 6px;
+      padding: 4px 10px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
+    }
+    @keyframes couponPulse {
+      0%, 100% { box-shadow: 0 6px 16px rgba(173,30,65,0.30); }
+      50%      { box-shadow: 0 6px 24px rgba(173,30,65,0.55); }
+    }
 
     /* ── FORM ── */
     .field { margin-bottom: 14px; }
@@ -1083,8 +1107,34 @@ function renderThanks() {
     '<div class="quiz-thanks">' +
     '<span class="emoji">💚</span>' +
     '<h3>Prontinho, obrigada!</h3>' +
-    '<p>Suas respostas ajudam a gente a cuidar melhor de você.<br>Seu cupom: <span class="coupon-mini">' + COUPON + '</span></p>' +
+    '<p>Suas respostas ajudam a gente a cuidar melhor de você.</p>' +
+    '<p class="quiz-thanks__label">Seu cupom de desconto</p>' +
+    '<button type="button" class="quiz-coupon" id="quizCouponBtn">' +
+      '<span class="quiz-coupon__code">' + COUPON + '</span>' +
+      '<span class="quiz-coupon__copy">Copiar</span>' +
+    '</button>' +
     '</div>';
+
+  var btn = document.getElementById('quizCouponBtn');
+  if (!btn) return;
+  btn.addEventListener('click', function () {
+    var copyEl = btn.querySelector('.quiz-coupon__copy');
+    var done = function () {
+      if (copyEl) copyEl.textContent = 'Copiado! ✓';
+      btn.classList.add('is-copied');
+      setTimeout(function () { if (copyEl) copyEl.textContent = 'Copiar'; btn.classList.remove('is-copied'); }, 1800);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(COUPON).then(done).catch(fb);
+    } else { fb(); }
+    function fb() {
+      var ta = document.createElement('textarea');
+      ta.value = COUPON; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(ta); done();
+    }
+  });
 }
 
 function closeMain() {
