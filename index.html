@@ -289,7 +289,7 @@
     /* ── SUCCESS OVERLAY ── */
     .success-overlay {
       display: none; position: fixed; inset: 0;
-      background: rgba(26,26,26,0.65);
+      background: transparent;
       align-items: center; justify-content: center;
       z-index: 999; padding: 16px;
     }
@@ -1016,6 +1016,8 @@ document.getElementById('leadForm').addEventListener('submit', async function (e
 
 // ── SUCCESS ──────────────────────────────────────────────────────
 function showSuccess() {
+  var mc = document.getElementById('mainCard');
+  if (mc) mc.style.display = 'none'; // esconde a roda (overlays agora transparentes)
   document.getElementById('successOverlay').classList.add('active');
   createSparkles();
   // Avisa a loja (página-mãe) que ganhou → dispara a sticky bar do cupom
@@ -1028,6 +1030,7 @@ function showSuccess() {
 
 function closeSuccess() {
   document.getElementById('successOverlay').classList.remove('active');
+  try { window.parent.postMessage({ action: 'closeRoleta' }, '*'); } catch (e) {}
 }
 
 // ── QUIZ opcional (pós-prêmio) — perfila o lead, não trava o cupom ──
