@@ -108,6 +108,7 @@
 
     /* ── FORM ── */
     .field { margin-bottom: 14px; }
+    .step[hidden] { display: none; }
 
     .field label {
       display: block;
@@ -117,7 +118,8 @@
     }
 
     .field input[type="email"],
-    .field input[type="tel"] {
+    .field input[type="tel"],
+    .field input[type="text"] {
       width: 100%;
       padding: 11px 13px;
       border: 1.5px solid #D5CFC8;
@@ -324,12 +326,17 @@
   <h2 class="title">Gire e Ganhe</h2>
 
   <form id="leadForm" novalidate>
-    <div class="field">
-      <label for="email">E-mail *</label>
-      <input type="email" id="email" placeholder="Digite seu melhor e-mail" autocomplete="email" />
-      <span class="hint" id="emailHint">Insira um e-mail válido. E-mails temporários não são aceitos.</span>
+    <!-- Passo 1: e-mail -->
+    <div class="step" data-step="1">
+      <div class="field">
+        <label for="email">E-mail *</label>
+        <input type="email" id="email" placeholder="Digite seu melhor e-mail" autocomplete="email" />
+        <span class="hint" id="emailHint">Insira um e-mail válido. E-mails temporários não são aceitos.</span>
+      </div>
     </div>
 
+    <!-- Passo 2: WhatsApp -->
+    <div class="step" data-step="2" hidden>
     <div class="field">
       <label>Celular *</label>
       <div class="phone-row">
@@ -391,6 +398,15 @@
       </div>
       <span class="hint" id="phoneHint">Insira um celular válido.</span>
     </div>
+    </div>
+
+    <!-- Passo 3: nome + privacidade -->
+    <div class="step" data-step="3" hidden>
+    <div class="field">
+      <label for="firstName">Seu primeiro nome *</label>
+      <input type="text" id="firstName" placeholder="Como podemos te chamar?" autocomplete="given-name" maxlength="40" />
+      <span class="hint" id="nameHint">Digite seu primeiro nome.</span>
+    </div>
 
     <div class="privacy">
       <input type="checkbox" id="privacy" />
@@ -400,8 +416,9 @@
       </span>
     </div>
     <span class="hint" id="privacyHint" style="margin-bottom:12px;">Aceite a Política de Privacidade para continuar.</span>
+    </div>
 
-    <button type="submit" class="spin-btn" id="spinBtn">GIRAR ROLETA</button>
+    <button type="submit" class="spin-btn" id="spinBtn">Continuar</button>
   </form>
 </div>
 
@@ -633,7 +650,7 @@ async function checkEmailDomain(email) {
 const KLAVIYO_COMPANY_ID = 'WgydHV';
 const KLAVIYO_LIST_ID    = 'USNPFr';
 
-async function sendToKlaviyo(email, phone) {
+async function sendToKlaviyo(email, phone, firstName) {
   try {
     const res = await fetch(`https://a.klaviyo.com/client/subscriptions/?company_id=${KLAVIYO_COMPANY_ID}`, {
       method: 'POST',
@@ -645,7 +662,7 @@ async function sendToKlaviyo(email, phone) {
             profile: {
               data: {
                 type: 'profile',
-                attributes: { email }
+                attributes: { email, first_name: firstName }
               }
             }
           },
@@ -833,45 +850,79 @@ function validEmail(e) {
   return true;
 }
 
+// ── MULTI-STEP (e-mail → WhatsApp → nome → girar) ─────────────────
+let currentStep = 1;
+const TOTAL_STEPS = 3;
+let wonName = '';
+const show = (id, on) => document.getElementById(id).classList.toggle('show', on);
+
+function goToStep(n) {
+  currentStep = n;
+  document.querySelectorAll('#leadForm .step').forEach(function (s) {
+    s.hidden = (parseInt(s.dataset.step, 10) !== n);
+  });
+  const btn = document.getElementById('spinBtn');
+  btn.textContent = (n === TOTAL_STEPS) ? 'GIRAR ROLETA' : 'Continuar';
+  const input = document.querySelector('#leadForm .step[data-step="' + n + '"] input:not([type=checkbox])');
+  if (input) setTimeout(function () { input.focus(); }, 60);
+}
+
 document.getElementById('leadForm').addEventListener('submit', async function (e) {
   e.preventDefault();
+  if (spinning) return;
 
+  // Passo 1 — e-mail (valida formato; checagem de domínio fica pro giro)
+  if (currentStep === 1) {
+    const email1 = document.getElementById('email').value.trim();
+    if (!validEmail(email1)) { show('emailHint', true); return; }
+    show('emailHint', false);
+    goToStep(2);
+    return;
+  }
+
+  // Passo 2 — WhatsApp
+  if (currentStep === 2) {
+    const phone2 = document.getElementById('phone').value.trim();
+    if (phone2.replace(/\D/g, '').length < 10) { show('phoneHint', true); return; }
+    show('phoneHint', false);
+    goToStep(3);
+    return;
+  }
+
+  // Passo 3 — nome + privacidade → valida, checa domínio, gira
   const email   = document.getElementById('email').value.trim();
   const phone   = document.getElementById('phone').value.trim();
+  const name    = document.getElementById('firstName').value.trim();
   const privacy = document.getElementById('privacy').checked;
 
-  // Validação
   let ok = true;
-  const show = (id, show) => document.getElementById(id).classList.toggle('show', show);
+  if (name.length < 2)  { show('nameHint', true);    ok = false; } else show('nameHint', false);
+  if (!privacy)         { show('privacyHint', true); ok = false; } else show('privacyHint', false);
+  if (!ok) return;
 
-  if (!validEmail(email))                       { show('emailHint', true);   ok = false; } else show('emailHint', false);
-  if (phone.replace(/\D/g,'').length < 10)      { show('phoneHint', true);   ok = false; } else show('phoneHint', false);
-  if (!privacy)                                  { show('privacyHint', true); ok = false; } else show('privacyHint', false);
-
-  if (!ok || spinning) return;
-
-  // Valida domínio do e-mail via Edge Function (MX record)
   const btn = document.getElementById('spinBtn');
   btn.disabled = true;
   btn.textContent = 'VALIDANDO...';
 
   const emailOk = await checkEmailDomain(email);
   if (!emailOk) {
-    show('emailHint', true);
     btn.disabled = false;
     btn.textContent = 'GIRAR ROLETA';
+    goToStep(1);
+    show('emailHint', true);
     return;
   }
 
   spinning = true;
   btn.textContent = 'GIRANDO...';
+  wonName = name;
 
-  // Salva lead no Supabase (sem bloquear a animação)
-  sb.from('roleta_leads').insert({ email, phone, coupon: COUPON })
+  // Salva lead no Supabase (sem bloquear a animação) — requer coluna first_name
+  sb.from('roleta_leads').insert({ email, phone, coupon: COUPON, first_name: name })
     .then(({ error }) => { if (error) console.warn('Supabase insert error:', error.message); });
 
   // Envia para Klaviyo
-  sendToKlaviyo(email, phone);
+  sendToKlaviyo(email, phone, name);
 
   animateSpin(calcTargetDeg(), () => {
     spinning = false;
@@ -883,6 +934,10 @@ document.getElementById('leadForm').addEventListener('submit', async function (e
 function showSuccess() {
   document.getElementById('successOverlay').classList.add('active');
   createSparkles();
+  // Avisa a loja (página-mãe) que ganhou → dispara a sticky bar do cupom
+  try {
+    window.parent.postMessage({ action: 'rouletteWon', nome: wonName, cupom: COUPON }, '*');
+  } catch (err) {}
 }
 
 function closeSuccess() {
