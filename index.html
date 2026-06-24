@@ -210,7 +210,28 @@
     }
 
     .spin-btn:hover:not(:disabled) { background: #ad1e41; }
-    .spin-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+    .spin-btn:active:not(:disabled) { transform: scale(0.98); }
+    .spin-btn:disabled { opacity: 0.7; cursor: not-allowed; animation: btnPulse 1.1s ease-in-out infinite; }
+
+    /* ── Micro-animações ── */
+    @keyframes stepIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .step:not([hidden]) { animation: stepIn 0.28s ease both; }
+
+    @keyframes btnPulse {
+      0%, 100% { opacity: 0.7; }
+      50%      { opacity: 0.45; }
+    }
+
+    @keyframes fieldShake {
+      0%, 100% { transform: translateX(0); }
+      25%      { transform: translateX(-6px); }
+      75%      { transform: translateX(6px); }
+    }
+    .field input.shake,
+    .privacy.shake { animation: fieldShake 0.35s ease; }
 
     /* ── SUCCESS OVERLAY ── */
     .success-overlay {
@@ -855,6 +876,14 @@ let currentStep = 1;
 const TOTAL_STEPS = 3;
 let wonName = '';
 const show = (id, on) => document.getElementById(id).classList.toggle('show', on);
+function shake(sel) {
+  const el = document.querySelector(sel);
+  if (!el) return;
+  el.classList.remove('shake');
+  void el.offsetWidth; // reflow para reiniciar a animação
+  el.classList.add('shake');
+  setTimeout(function () { el.classList.remove('shake'); }, 420);
+}
 
 function goToStep(n) {
   currentStep = n;
@@ -874,7 +903,7 @@ document.getElementById('leadForm').addEventListener('submit', async function (e
   // Passo 1 — e-mail (valida formato; checagem de domínio fica pro giro)
   if (currentStep === 1) {
     const email1 = document.getElementById('email').value.trim();
-    if (!validEmail(email1)) { show('emailHint', true); return; }
+    if (!validEmail(email1)) { show('emailHint', true); shake('#email'); return; }
     show('emailHint', false);
     goToStep(2);
     return;
@@ -883,7 +912,7 @@ document.getElementById('leadForm').addEventListener('submit', async function (e
   // Passo 2 — WhatsApp
   if (currentStep === 2) {
     const phone2 = document.getElementById('phone').value.trim();
-    if (phone2.replace(/\D/g, '').length < 10) { show('phoneHint', true); return; }
+    if (phone2.replace(/\D/g, '').length < 10) { show('phoneHint', true); shake('#phone'); return; }
     show('phoneHint', false);
     goToStep(3);
     return;
@@ -896,8 +925,8 @@ document.getElementById('leadForm').addEventListener('submit', async function (e
   const privacy = document.getElementById('privacy').checked;
 
   let ok = true;
-  if (name.length < 2)  { show('nameHint', true);    ok = false; } else show('nameHint', false);
-  if (!privacy)         { show('privacyHint', true); ok = false; } else show('privacyHint', false);
+  if (name.length < 2)  { show('nameHint', true);    shake('#firstName'); ok = false; } else show('nameHint', false);
+  if (!privacy)         { show('privacyHint', true); shake('.privacy');   ok = false; } else show('privacyHint', false);
   if (!ok) return;
 
   const btn = document.getElementById('spinBtn');
