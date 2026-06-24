@@ -135,10 +135,8 @@
     .quiz-cta__btn:hover { background: #ad1e41; color: #fff; }
     .quiz-cta__btn:active { transform: scale(0.97); }
 
-    .quiz-box {
-      animation: stepIn 0.28s ease both; text-align: left;
-      margin-top: 16px; padding-top: 14px; border-top: 1px solid #eee;
-    }
+    #quizOverlay { z-index: 1000; }
+    .quiz-box { animation: stepIn 0.28s ease both; text-align: left; }
     .quiz-progress {
       font-size: 11px; font-weight: 700; letter-spacing: 1px;
       color: #ad1e41; text-transform: uppercase; margin-bottom: 6px; text-align: center;
@@ -505,8 +503,14 @@
     </p>
     <div class="coupon" id="couponDisplay">AMOR10</div>
     <button class="copy-btn" id="copyBtn" onclick="copyCoupon()">COPIAR</button>
+  </div>
+</div>
 
-    <div class="quiz-box" id="quizBox" hidden></div>
+<!-- QUIZ — popup separado, por cima do prêmio -->
+<div class="success-overlay" id="quizOverlay">
+  <div class="success-card">
+    <button class="success-close" onclick="closeQuiz()">✕</button>
+    <div class="quiz-box" id="quizBox"></div>
   </div>
 </div>
 
@@ -1035,11 +1039,14 @@ const QUIZ = [
 const quizAnswers = {};
 
 function startQuiz() {
-  var box = document.getElementById('quizBox');
-  if (!box || box.dataset.started) return; // evita re-disparar
-  box.dataset.started = '1';
-  box.hidden = false;
+  var ov = document.getElementById('quizOverlay');
+  if (!ov || ov.dataset.started) return; // evita re-disparar
+  ov.dataset.started = '1';
+  ov.classList.add('active');
   renderQuestion(0);
+}
+function closeQuiz() {
+  document.getElementById('quizOverlay').classList.remove('active');
 }
 
 function renderQuestion(i) {
