@@ -135,7 +135,10 @@
     .quiz-cta__btn:hover { background: #ad1e41; color: #fff; }
     .quiz-cta__btn:active { transform: scale(0.97); }
 
-    .quiz-box { animation: stepIn 0.28s ease both; text-align: left; }
+    .quiz-box {
+      animation: stepIn 0.28s ease both; text-align: left;
+      margin-top: 16px; padding-top: 14px; border-top: 1px solid #eee;
+    }
     .quiz-progress {
       font-size: 11px; font-weight: 700; letter-spacing: 1px;
       color: #ad1e41; text-transform: uppercase; margin-bottom: 6px; text-align: center;
@@ -503,10 +506,6 @@
     <div class="coupon" id="couponDisplay">AMOR10</div>
     <button class="copy-btn" id="copyBtn" onclick="copyCoupon()">COPIAR</button>
 
-    <div class="quiz-cta" id="quizCta">
-      <p class="quiz-cta__txt">Ajuda a Nouê a te conhecer melhor? <b>3 perguntinhas</b> 💚</p>
-      <button type="button" class="quiz-cta__btn" onclick="startQuiz()">Bora responder</button>
-    </div>
     <div class="quiz-box" id="quizBox" hidden></div>
   </div>
 </div>
@@ -1019,6 +1018,8 @@ function showSuccess() {
   try {
     window.parent.postMessage({ action: 'rouletteWon', nome: wonName, cupom: COUPON }, '*');
   } catch (err) {}
+  // Quiz surge sozinho 1,5s depois do prêmio (sem botão, cupom continua visível)
+  setTimeout(startQuiz, 1500);
 }
 
 function closeSuccess() {
@@ -1034,13 +1035,10 @@ const QUIZ = [
 const quizAnswers = {};
 
 function startQuiz() {
-  ['quizCta', 'couponDisplay', 'copyBtn'].forEach(function (id) {
-    var el = document.getElementById(id); if (el) el.style.display = 'none';
-  });
-  ['.success-desc', '.success-title'].forEach(function (sel) {
-    var el = document.querySelector('#successOverlay ' + sel); if (el) el.style.display = 'none';
-  });
-  document.getElementById('quizBox').hidden = false;
+  var box = document.getElementById('quizBox');
+  if (!box || box.dataset.started) return; // evita re-disparar
+  box.dataset.started = '1';
+  box.hidden = false;
   renderQuestion(0);
 }
 
