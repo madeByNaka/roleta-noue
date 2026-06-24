@@ -100,11 +100,25 @@
     /* ── TITLE ── */
     .title {
       text-align: center;
-      font-size: 18px; font-weight: 700;
+      font-size: 19px; font-weight: 800;
       color: #1A1A1A;
-      letter-spacing: 0.5px;
-      margin-bottom: 20px;
+      letter-spacing: 0.3px;
+      margin-bottom: 4px;
     }
+    .subtitle {
+      text-align: center;
+      font-size: 12.5px;
+      color: #777;
+      margin: 0 0 18px;
+    }
+    .consent {
+      text-align: center;
+      font-size: 11px;
+      line-height: 1.5;
+      color: #aaa;
+      margin: 12px 0 0;
+    }
+    .consent a { color: #999; text-decoration: underline; }
 
     /* ── FORM ── */
     .field { margin-bottom: 14px; }
@@ -344,7 +358,8 @@
     </div>
   </div>
 
-  <h2 class="title">Gire e Ganhe</h2>
+  <h2 class="title">🎁 Gire e Ganhe Desconto! 🎁</h2>
+  <p class="subtitle">Preencha e gire a roleta pra revelar seu prêmio 💚</p>
 
   <form id="leadForm" novalidate>
     <!-- Passo 1: e-mail -->
@@ -429,17 +444,10 @@
       <span class="hint" id="nameHint">Digite seu primeiro nome.</span>
     </div>
 
-    <div class="privacy">
-      <input type="checkbox" id="privacy" />
-      <span class="privacy-text">
-        Ao marcar esta caixa, você concorda com a nossa
-        <a href="https://nouecosmeticos.com.br/policies/privacy-policy" target="_blank">Política de Privacidade</a> *
-      </span>
-    </div>
-    <span class="hint" id="privacyHint" style="margin-bottom:12px;">Aceite a Política de Privacidade para continuar.</span>
     </div>
 
     <button type="submit" class="spin-btn" id="spinBtn">Continuar</button>
+    <p class="consent">Ao se cadastrar, você estará concordando com a nossa <a href="https://nouecosmeticos.com.br/policies/privacy-policy" target="_blank">Política de Privacidade</a>.</p>
   </form>
 </div>
 
@@ -922,11 +930,9 @@ document.getElementById('leadForm').addEventListener('submit', async function (e
   const email   = document.getElementById('email').value.trim();
   const phone   = document.getElementById('phone').value.trim();
   const name    = document.getElementById('firstName').value.trim();
-  const privacy = document.getElementById('privacy').checked;
 
   let ok = true;
-  if (name.length < 2)  { show('nameHint', true);    shake('#firstName'); ok = false; } else show('nameHint', false);
-  if (!privacy)         { show('privacyHint', true); shake('.privacy');   ok = false; } else show('privacyHint', false);
+  if (name.length < 2)  { show('nameHint', true); shake('#firstName'); ok = false; } else show('nameHint', false);
   if (!ok) return;
 
   const btn = document.getElementById('spinBtn');
