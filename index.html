@@ -7,9 +7,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
     /* Cores por tema. O padrão é o verde da marca; o data-tema do <html> troca (ver linha 2).
-       Outubro Rosa = a cor da FITA do banner da campanha: meio-tom #D04D8E e sombra #A82A65. */
-    :root { --acento: #00A341; --acento-escuro: #007d2f; --anel: #E5DDD4; --fatia-escura: #1A1A1A; --fatia-escura-2: #2C2C2C; --pino: #CC0000; }
-    html[data-tema="outubro-rosa"] { --acento: #D04D8E; --acento-escuro: #A82A65; --anel: #F7D4E6; --fatia-escura: #A82A65; --fatia-escura-2: #B13470; --pino: #5E1730; }
+       Outubro Rosa = a cor da FITA do banner da campanha: meio-tom #D04D8E e sombra #A82A65.
+       --botao fica verde em todo tema (o CTA é sempre o verde da marca). As fatias 10% e BRINDE são a --fatia-clara. */
+    :root { --acento: #00A341; --acento-escuro: #007d2f; --anel: #E5DDD4; --fatia-escura: #1A1A1A; --fatia-escura-2: #2C2C2C; --pino: #CC0000;
+            --botao: #00A341; --fatia-clara: #00A341; --fatia-clara-texto: #FFFFFF; }
+    html[data-tema="outubro-rosa"] { --acento: #D04D8E; --acento-escuro: #A82A65; --anel: #F7D4E6; --fatia-escura: #A82A65; --fatia-escura-2: #B13470; --pino: #5E1730;
+            --fatia-clara: #FCEAF2; --fatia-clara-texto: #A82A65; }
     .pointer path { fill: var(--pino); }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -283,7 +286,7 @@
 
     .spin-btn {
       width: 100%; padding: 15px;
-      background: var(--acento); color: #fff;
+      background: var(--botao); color: #fff;
       border: none; border-radius: 8px;
       font-family: 'Montserrat', sans-serif;
       font-size: 13px; font-weight: 700;
@@ -292,7 +295,7 @@
       transition: background 0.25s;
     }
 
-    .spin-btn:hover:not(:disabled) { background: var(--acento); }
+    .spin-btn:hover:not(:disabled) { background: var(--botao); }
     .spin-btn:active:not(:disabled) { transform: scale(0.98); }
     .spin-btn:disabled { opacity: 0.7; cursor: not-allowed; animation: btnPulse 1.1s ease-in-out infinite; }
 
@@ -577,9 +580,9 @@ document.querySelectorAll('.coracao').forEach((el) => { el.textContent = CORACAO
 
 // Segment 0 (index 0) é o vencedor: sempre cai em 15%
 const SEGMENTS = [
-  { label: '10%',                   color: COR('--acento'),         text: '#FFFFFF' },
+  { label: '10%',                   color: COR('--fatia-clara'),    text: COR('--fatia-clara-texto') },
   { label: '5%',                    color: COR('--fatia-escura'),   text: '#FFFFFF' },
-  { label: 'BRINDE',                color: COR('--acento'),         text: '#FFFFFF' },
+  { label: 'BRINDE',                color: COR('--fatia-clara'),    text: COR('--fatia-clara-texto') },
   { label: 'TENTE\nNOVAMENTE',      color: COR('--fatia-escura-2'), text: '#FFFFFF' },
 ];
 
