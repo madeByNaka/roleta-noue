@@ -555,8 +555,17 @@
 const SUPABASE_URL  = 'https://zhdapckcsibmofworhjj.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpoZGFwY2tjc2libW9md29yaGpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2Mjg5ODYsImV4cCI6MjA4ODIwNDk4Nn0.tS9s-gazJVxGd6WPHk7nryPx9UAO0N-A-w60d3ICIvc';
 const COUPON        = 'ROLETA10';
+// ?teste=1 → tudo igual, mas não grava o lead (Supabase) nem inscreve na Klaviyo. Pra testar no tema de prévia.
+const TESTE         = /[?&]teste=1(&|$)/.test(location.search);
 
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+if (TESTE) {
+  var seloTeste = document.createElement('div');
+  seloTeste.textContent = 'MODO TESTE · não grava lead';
+  seloTeste.style.cssText = 'position:fixed;left:8px;bottom:8px;z-index:9;background:#1A1A1A;color:#fff;font:600 10px/1.2 Montserrat,sans-serif;letter-spacing:.5px;padding:4px 8px;border-radius:6px;opacity:.85;pointer-events:none';
+  document.body.appendChild(seloTeste);
+}
 
 // ── WHEEL ────────────────────────────────────────────────────────
 const canvas  = document.getElementById('wheelCanvas');
@@ -1042,12 +1051,14 @@ document.getElementById('leadForm').addEventListener('submit', async function (e
   wonEmail = email;
   wonPhone = phone;
 
-  // Salva lead no Supabase (sem bloquear a animação) — requer coluna first_name
-  sb.from('roleta_leads').insert({ email, phone, coupon: COUPON, first_name: name })
-    .then(({ error }) => { if (error) console.warn('Supabase insert error:', error.message); });
+  if (!TESTE) {
+    // Salva lead no Supabase (sem bloquear a animação) — requer coluna first_name
+    sb.from('roleta_leads').insert({ email, phone, coupon: COUPON, first_name: name })
+      .then(({ error }) => { if (error) console.warn('Supabase insert error:', error.message); });
 
-  // Envia para Klaviyo
-  sendToKlaviyo(email, phone, name);
+    // Envia para Klaviyo
+    sendToKlaviyo(email, phone, name);
+  }
 
   animateSpin(calcTargetDeg(), () => {
     spinning = false;
@@ -1066,12 +1077,64 @@ function showSuccess() {
     window.parent.postMessage({ action: 'rouletteWon', nome: wonName, cupom: COUPON }, '*');
   } catch (err) {}
   // Quiz surge sozinho 1,5s depois do prêmio (sem botão, cupom continua visível)
-  setTimeout(startQuiz, 1500);
+  quizTimer = setTimeout(startQuiz, 1500);
 }
 
 function closeSuccess() {
-  document.getElementById('successOverlay').classList.remove('active');
+  fecharTudo();
+}
+
+// ── COPIOU, FECHA (task do Renier 1219512734879599, 14/10/2026) ──
+// Clicou em copiar: mostra "Cupom copiado" por 1,5 s e fecha a roleta sozinha. A loja some com o
+// overlay pela mensagem 'closeRoleta' e a pessoa continua na página em que estava.
+const MS_COPIADO = 1500;
+let quizTimer = null;
+let fechando = false;
+
+function copiarCupom() {
+  var fallback = function () {
+    var ta = document.createElement('textarea');
+    ta.value = COUPON;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select(); ta.setSelectionRange(0, COUPON.length);
+    try { document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    return navigator.clipboard.writeText(COUPON).catch(fallback);
+  }
+  fallback();
+  return Promise.resolve();
+}
+
+function fecharTudo() {
+  if (quizTimer) { clearTimeout(quizTimer); quizTimer = null; }
+  ['successOverlay', 'quizOverlay'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.remove('active');
+  });
+  var mc = document.getElementById('mainCard');
+  if (mc) mc.style.display = 'none';
   try { window.parent.postMessage({ action: 'closeRoleta' }, '*'); } catch (e) {}
+}
+
+function copiarEFechar(btn, rotulo) {
+  if (fechando) return;
+  fechando = true;
+  // Copiou antes do quiz aparecer: o quiz não abre mais
+  if (quizTimer) { clearTimeout(quizTimer); quizTimer = null; }
+  var feito = false;
+  var depois = function () {
+    if (feito) return;
+    feito = true;
+    (rotulo || btn).textContent = 'Cupom copiado ✓';
+    btn.classList.add(btn.classList.contains('quiz-coupon') ? 'is-copied' : 'copied');
+    setTimeout(fecharTudo, MS_COPIADO);
+  };
+  copiarCupom().then(depois, depois);
+  setTimeout(depois, 800); // se o celular demorar pra liberar a área de transferência, segue igual
 }
 
 // ── QUIZ opcional (pós-prêmio) — perfila o lead, não trava o cupom ──
@@ -1090,7 +1153,9 @@ function startQuiz() {
   renderQuestion(0);
 }
 function closeQuiz() {
-  document.getElementById('quizOverlay').classList.remove('active');
+  // ✕ do quiz fecha a roleta inteira (Luan, 14/10): antes voltava pro prêmio e pedia outro ✕.
+  // Na loja o cupom continua na barra do topo (roleta-cupom-bar) por 30 min.
+  fecharTudo();
 }
 
 function renderQuestion(i) {
@@ -1113,6 +1178,7 @@ function renderQuestion(i) {
 }
 
 function saveQuiz() {
+  if (TESTE) return;
   try {
     sb.from('roleta_quiz').insert(Object.assign({ email: wonEmail, telefone: wonPhone }, quizAnswers))
       .then(function (r) { if (r.error) console.warn('quiz save:', r.error.message); });
@@ -1135,22 +1201,7 @@ function renderThanks() {
   var btn = document.getElementById('quizCouponBtn');
   if (!btn) return;
   btn.addEventListener('click', function () {
-    var copyEl = btn.querySelector('.quiz-coupon__copy');
-    var done = function () {
-      if (copyEl) copyEl.textContent = 'Copiado! ✓';
-      btn.classList.add('is-copied');
-      setTimeout(function () { if (copyEl) copyEl.textContent = 'Copiar'; btn.classList.remove('is-copied'); }, 1800);
-    };
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(COUPON).then(done).catch(fb);
-    } else { fb(); }
-    function fb() {
-      var ta = document.createElement('textarea');
-      ta.value = COUPON; ta.style.position = 'fixed'; ta.style.opacity = '0';
-      document.body.appendChild(ta); ta.select();
-      try { document.execCommand('copy'); } catch (e) {}
-      document.body.removeChild(ta); done();
-    }
+    copiarEFechar(btn, btn.querySelector('.quiz-coupon__copy'));
   });
 }
 
@@ -1160,18 +1211,7 @@ function closeMain() {
 }
 
 function copyCoupon() {
-  const btn = document.getElementById('copyBtn');
-  const fallback = () => {
-    const ta = Object.assign(document.createElement('textarea'), { value: COUPON });
-    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
-  };
-  (navigator.clipboard ? navigator.clipboard.writeText(COUPON) : Promise.reject())
-    .catch(fallback)
-    .finally(() => {
-      btn.textContent = 'COPIADO! ✓';
-      btn.classList.add('copied');
-      setTimeout(() => { btn.textContent = 'COPIAR'; btn.classList.remove('copied'); }, 2500);
-    });
+  copiarEFechar(document.getElementById('copyBtn'));
 }
 
 function createSparkles() {
