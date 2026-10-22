@@ -26,6 +26,9 @@
       justify-content: center;
       padding: 16px;
     }
+    /* Sem régua de rolagem no quadro do site (21/10/2026, Luan): a rolagem continua pra tela baixa, só a barra some */
+    html, body { scrollbar-width: none; }
+    html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
     /* ── CARD ── */
     .card {
