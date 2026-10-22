@@ -1,6 +1,16 @@
 <!DOCTYPE html>
 <html lang="pt-BR" data-tema="outubro-rosa"><!-- tema do mês: "outubro-rosa" (out/2026). Em novembro: tirar o data-tema e volta o verde. -->
 <head>
+  <script>
+    // ?tema=black (ou padrao, outubro-rosa) troca o tema do mês sem mexer no resto: o tema da loja manda o da Black
+    // quando a caixinha "Black November" está ligada (Black Antecipada, decisão do Luan em 22/10/2026). Sem o
+    // parâmetro, vale o data-tema da linha acima.
+    (function () {
+      var t = new URLSearchParams(location.search).get('tema');
+      if (t === 'padrao') document.documentElement.removeAttribute('data-tema');
+      else if (t === 'black' || t === 'outubro-rosa') document.documentElement.dataset.tema = t;
+    })();
+  </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Gire e Ganhe – Nouê Cosméticos</title>
@@ -13,6 +23,12 @@
             --botao: #00A341; --fatia-clara: #00A341; --fatia-clara-texto: #FFFFFF; }
     html[data-tema="outubro-rosa"] { --acento: #D04D8E; --acento-escuro: #A82A65; --anel: #F7D4E6; --fatia-escura: #A82A65; --fatia-escura-2: #B13470; --pino: #5E1730;
             --fatia-clara: #FCEAF2; --fatia-clara-texto: #A82A65; }
+    /* Black Antecipada = o laranja dos banners da campanha (#F7822F a #E73C19) sobre grafite. Branco no #E73C19 dá 4,1:1
+       (passa pra texto grande e negrito, que é o das fatias). */
+    html[data-tema="black"] { --acento: #E73C19; --acento-escuro: #B92E10; --anel: #3A3A3A; --fatia-escura: #1A1A1A; --fatia-escura-2: #2C2C2C;
+            --pino: #F7822F; --fatia-clara: #E73C19; --fatia-clara-texto: #FFFFFF; }
+    html[data-tema="black"] .coupon { background: #FFF3EC; border-color: #F5C9B3; }
+    html[data-tema="black"] .quiz-opt:hover { background: #FFF3EC; }
     .pointer path { fill: var(--pino); }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -587,7 +603,7 @@ const R  = CW / 2 - 2;
 // Cor do tema do mês (variáveis do :root, trocadas pelo data-tema do <html>)
 const COR = (nome) => getComputedStyle(document.documentElement).getPropertyValue(nome).trim();
 const TEMA = document.documentElement.dataset.tema || 'padrao';
-const CORACAO = TEMA === 'outubro-rosa' ? '💗' : '💚';
+const CORACAO = TEMA === 'outubro-rosa' ? '💗' : TEMA === 'black' ? '🖤' : '💚';
 document.querySelectorAll('.coracao').forEach((el) => { el.textContent = CORACAO; });
 
 // Segment 0 (index 0) é o vencedor: sempre cai em 15%
@@ -1223,6 +1239,8 @@ function createSparkles() {
 
   const colors = TEMA === 'outubro-rosa'
     ? ['#D04D8E','#EA87BE','#A82A65','#F8BBD0','#FFFFFF','#FFD700','#F470B6']
+    : TEMA === 'black'
+    ? ['#F7822F','#E73C19','#FFFFFF','#FFD700','#2C2C2C','#FF9A5C','#C0C0C0']
     : ['#00A341','#FFD700','#FF6B6B','#4FC3F7','#CE93D8','#FFCC02','#FF8A65'];
   const pieces = [];
   const total  = 80;
