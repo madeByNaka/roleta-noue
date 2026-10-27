@@ -28,7 +28,29 @@
     html[data-tema="black"] { --acento: #E73C19; --acento-escuro: #B92E10; --anel: #3A3A3A; --fatia-escura: #1A1A1A; --fatia-escura-2: #2C2C2C;
             --pino: #F7822F; --fatia-clara: #E73C19; --fatia-clara-texto: #FFFFFF; }
     html[data-tema="black"] .coupon { background: #FFF3EC; border-color: #F5C9B3; }
-    html[data-tema="black"] .quiz-opt:hover { background: #FFF3EC; }
+    /* Black na paleta do KV da Black Antecipada (27/10/2026, mockup do Liq aprovado pelo Luan: "gostei, manda esse visual
+       pro Nex refazer a roleta da Black nessa paleta"; crm-brain/shopify/mockup-roleta-black-kv.html): card cinza escuro,
+       degradê #F7822F a #E73C19 nas fatias de prêmio (no canvas), no aro, no miolo e no selo ANTECIPADA; verde só no botão. */
+    html[data-tema="black"] { --pino: #FFFFFF; --fatia-escura: #222222; --fatia-escura-2: #222222; }
+    html[data-tema="black"] .card, html[data-tema="black"] .success-card { background: #2b2b2b; border: 1px solid #3d3d3d; }
+    html[data-tema="black"] .close-btn, html[data-tema="black"] .success-close { color: #cfcfcf; }
+    html[data-tema="black"] .wheel-outer-ring { background: linear-gradient(135deg, #F7822F, #E73C19); }
+    html[data-tema="black"] .wheel-logo { filter: invert(1); }
+    html[data-tema="black"] .title, html[data-tema="black"] .success-title, html[data-tema="black"] .quiz-q { color: #FFFFFF; }
+    html[data-tema="black"] .subtitle, html[data-tema="black"] .success-desc, html[data-tema="black"] .quiz-cta__txt,
+    html[data-tema="black"] .quiz-thanks p, html[data-tema="black"] .field label, html[data-tema="black"] .privacy-text { color: #cfcfcf; }
+    html[data-tema="black"] .privacy-text a, html[data-tema="black"] .consent a { color: #FFFFFF; }
+    html[data-tema="black"] .field input[type="text"], html[data-tema="black"] .field input[type="email"],
+    html[data-tema="black"] .phone-row input[type="tel"],
+    html[data-tema="black"] .phone-prefix, html[data-tema="black"] .quiz-opt { background: #1c1c1c; border-color: #4a4a4a; color: #FFFFFF; }
+    html[data-tema="black"] .field input::placeholder, html[data-tema="black"] .phone-row input[type="tel"]::placeholder { color: #8a8a8a; }
+    html[data-tema="black"] .quiz-opt:hover { background: #333333; }
+    html[data-tema="black"] .spin-btn { border-radius: 999px; letter-spacing: .06em; text-transform: uppercase; }
+    .selo-black { display: none; }
+    html[data-tema="black"] .selo-black { display: block; text-align: center; margin: 0 0 10px; line-height: 1; color: #FFFFFF; }
+    .selo-black__black { letter-spacing: .55em; padding-left: .55em; font-weight: 300; font-size: 22px; }
+    .selo-black__ant { display: inline-block; margin-top: 4px; padding: 3px 10px; font-weight: 800; font-size: 24px;
+      background: linear-gradient(90deg, #F7822F, #E73C19); }
     .pointer path { fill: var(--pino); }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -432,6 +454,9 @@
 <div class="card" id="mainCard">
   <button class="close-btn" onclick="closeMain()" title="Fechar">✕</button>
 
+  <!-- selo do KV, só no tema black (27/10/2026) -->
+  <div class="selo-black" aria-hidden="true"><div class="selo-black__black">BLACK</div><div class="selo-black__ant">ANTECIPADA</div></div>
+
   <div class="wheel-area">
     <div class="wheel-outer-ring">
       <!-- Ponteiro -->
@@ -609,10 +634,13 @@ document.querySelectorAll('.coracao').forEach((el) => { el.textContent = CORACAO
 // Segment 0 (index 0) é o vencedor: sempre cai em 15%
 const SEGMENTS = [
   { label: '10%',                   color: COR('--fatia-clara'),    text: COR('--fatia-clara-texto') },
-  { label: '5%',                    color: COR('--fatia-escura'),   text: '#FFFFFF' },
+  { label: '5%',                    color: COR('--fatia-escura'),   text: TEMA === 'black' ? '#F7822F' : '#FFFFFF' },
   { label: 'BRINDE',                color: COR('--fatia-clara'),    text: COR('--fatia-clara-texto') },
-  { label: 'TENTE\nNOVAMENTE',      color: COR('--fatia-escura-2'), text: '#FFFFFF' },
+  { label: 'TENTE\nNOVAMENTE',      color: COR('--fatia-escura-2'), text: TEMA === 'black' ? '#BDBDBD' : '#FFFFFF' },
 ];
+// Black (paleta do KV, 27/10/2026): as fatias de prêmio levam o degradê do centro pra borda, girando junto com a roda
+const DEGRADE_BLACK = TEMA === 'black';
+const FATIA_CLARA = COR('--fatia-clara');   // lida uma vez: o drawWheel roda a cada quadro do giro
 
 const NUM = SEGMENTS.length;
 const ARC = (Math.PI * 2) / NUM;  // 90° por segmento
@@ -634,14 +662,21 @@ function drawWheel(rot) {
     ctx.moveTo(CX, CY);
     ctx.arc(CX, CY, R, start, end);
     ctx.closePath();
-    ctx.fillStyle = seg.color;
+    if (DEGRADE_BLACK && seg.color === FATIA_CLARA) {
+      const g = ctx.createLinearGradient(CX, CY, CX + R * Math.cos(mid), CY + R * Math.sin(mid));
+      g.addColorStop(0, '#F7822F');
+      g.addColorStop(1, '#E73C19');
+      ctx.fillStyle = g;
+    } else {
+      ctx.fillStyle = seg.color;
+    }
     ctx.fill();
 
-    // Divisor branco
+    // Divisor (branco; no black, escuro como no KV)
     ctx.beginPath();
     ctx.moveTo(CX, CY);
     ctx.lineTo(CX + R * Math.cos(start), CY + R * Math.sin(start));
-    ctx.strokeStyle = '#FFFFFF';
+    ctx.strokeStyle = DEGRADE_BLACK ? '#111111' : '#FFFFFF';
     ctx.lineWidth = 3;
     ctx.stroke();
 
@@ -668,13 +703,21 @@ function drawWheel(rot) {
     ctx.restore();
   }
 
-  // Círculo central branco
+  // Círculo central branco (no black: escuro com a borda em degradê, e o logo vira branco no CSS)
   ctx.beginPath();
   ctx.arc(CX, CY, 28, 0, Math.PI * 2);
-  ctx.fillStyle = '#FFFFFF';
+  ctx.fillStyle = DEGRADE_BLACK ? '#111111' : '#FFFFFF';
   ctx.fill();
-  ctx.strokeStyle = '#F0EAE0';
-  ctx.lineWidth = 2;
+  if (DEGRADE_BLACK) {
+    const g = ctx.createLinearGradient(CX - 28, CY - 28, CX + 28, CY + 28);
+    g.addColorStop(0, '#F7822F');
+    g.addColorStop(1, '#E73C19');
+    ctx.strokeStyle = g;
+    ctx.lineWidth = 3;
+  } else {
+    ctx.strokeStyle = '#F0EAE0';
+    ctx.lineWidth = 2;
+  }
   ctx.stroke();
 
 }
