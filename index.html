@@ -598,7 +598,11 @@
 // ── CONFIG ──────────────────────────────────────────────────────
 const SUPABASE_URL  = 'https://zhdapckcsibmofworhjj.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpoZGFwY2tjc2libW9md29yaGpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI2Mjg5ODYsImV4cCI6MjA4ODIwNDk4Nn0.tS9s-gazJVxGd6WPHk7nryPx9UAO0N-A-w60d3ICIvc';
-const COUPON        = 'ROLETA10';
+// Cupom dos 10%: no tema black é o BLACK (27/10/2026, Luan: "vamos trocar o cupom de 10% de ROLETA10 por BLACK pra gente
+// metrificar melhor essa fita"); fora da Black volta o ROLETA10 sozinho. ⚠️ O BLACK precisa existir na Yampi (10%, igual
+// ao ROLETA10) antes de publicar isto.
+const COUPON        = document.documentElement.dataset.tema === 'black' ? 'BLACK' : 'ROLETA10';
+document.getElementById('couponDisplay').textContent = COUPON;
 // ?teste=1 → tudo igual, mas não grava o lead (Supabase) nem inscreve na Klaviyo. Pra testar no tema de prévia.
 const TESTE         = /[?&]teste=1(&|$)/.test(location.search);
 
